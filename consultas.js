@@ -46,6 +46,23 @@ function verificarToken(req, res, next) {
 
 //    ----------------------- usuarios ----------------------
 
+// Función para obtener todos los usuarios
+const verUsuario = async () => {
+    const { rows, command, rowCount, fields } = await pool.query(
+        "SELECT * FROM usuarios"
+    );
+
+    console.log("----------------------------------------------");
+    console.log("Usuario registrados en la tabla");
+    console.log("Instruccion procesada: ", command);
+    console.log("Filas procesadas: ", rowCount);
+    console.log("Contenido procesado: ", rows);
+    console.log("Campos procesados: ", fields);
+    console.log("----------------------------------------------");
+
+    return rows;
+};
+
 // Función para insertar un usuario en la tabla
 const agregarUsuarios = async ({ nombre, mail, fotoPerfil, likes, clave }) => {
     const consulta =
@@ -66,23 +83,6 @@ const agregarUsuarios = async ({ nombre, mail, fotoPerfil, likes, clave }) => {
     );
 
     return result.rows[0];
-};
-
-// Función para obtener todos los usuarios
-const verUsuario = async () => {
-    const { rows, command, rowCount, fields } = await pool.query(
-        "SELECT * FROM usuarios"
-    );
-
-    console.log("----------------------------------------------");
-    console.log("Usuario registrados en la tabla");
-    console.log("Instruccion procesada: ", command);
-    console.log("Filas procesadas: ", rowCount);
-    console.log("Contenido procesado: ", rows);
-    console.log("Campos procesados: ", fields);
-    console.log("----------------------------------------------");
-
-    return rows;
 };
 
 // Función para actualizar un usuario

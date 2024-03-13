@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // levantando servidor
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5173;
 
 app.listen(PORT, () => {
     console.log(`Server en puerto: http://localhost:${PORT}`);
@@ -70,17 +70,25 @@ app.get("/usuarios", async (req, res) => {
 app.post("/usuarios", hashPassword, async (req, res) => {
     try {
         const { nombre, mail, fotoPerfil, likes, clave } = req.body;
-        const hashedPassword = req.hashedPassword;
-        // Agregar lógica para verificar si el usuario ya existe antes de registrarlo
-        // Puedes hacer una consulta a la base de datos para buscar un usuario con el mismo correo
 
-        // Si el usuario no existe, puedes proceder a registrarlo
-        const nuevoUsuario = await agregarUsuarios({ nombre, mail, fotoPerfil, likes, clave: 0 });
-        const result = await pool.query("UPDATE usuarios SET clave = $1 WHERE id = $2 RETURNING *", [hashedPassword, nuevoUsuario.id]);
-        const user = result.rows[0];
+        // Verificar si el usuario ya existe antes de registrarlo
+        const usuarioExistente = await pool.query("SELECT * FROM usuarios WHERE mail = $1", [mail]);
+        if (usuarioExistente.rows.length > 0) {
+            return res.status(400).json({ mensaje: "El usuario ya está registrado" });
+        }
+
+        // Validar que se proporcionen todos los campos requeridos
+        if (!nombre || !mail || !clave) {
+            return res.status(400).json({ mensaje: "Todos los campos son requeridos" });
+        }
+
+        // Si el usuario no existe, procede a registrarlo
+        const hashedPassword = req.hashedPassword;
+        const nuevoUsuario = await agregarUsuarios({ nombre, mail, fotoPerfil, likes, clave: hashedPassword });
 
         // Generar un token para el nuevo usuario
-        const token = generarToken(user);
+        const token = generarToken(nuevoUsuario);
+
         res.json({ mensaje: "Usuario registrado con éxito", token });
     } catch (error) {
         console.error(error);
