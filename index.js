@@ -51,7 +51,10 @@ app.post("/login", async (req, res) => {
         }
 
         const token = generarToken(user);
-        res.json({ token });
+        res.json({
+            token: token,
+            usuario: user
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ mensaje: "Error en el servidor" });
