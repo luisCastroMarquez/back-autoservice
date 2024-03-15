@@ -89,7 +89,12 @@ app.post("/usuarios", hashPassword, async (req, res) => {
         // Generar un token para el nuevo usuario
         const token = generarToken(nuevoUsuario);
 
-        res.json({ mensaje: "Usuario registrado con éxito", token });
+        // Devolver los datos del usuario recién registrado como parte de la respuesta
+        res.status(201).json({
+            mensaje: "Usuario registrado con éxito",
+            usuario: nuevoUsuario,
+            token
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ mensaje: "El Usuario se encuentra registrado" });
