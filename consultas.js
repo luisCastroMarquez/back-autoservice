@@ -115,6 +115,138 @@ const eliminarUsuario = async (id) => {
     }
 };
 
+//    ----------------------- imagenes ----------------------
+
+const verImagenes = async () => {
+    const { rows, command, rowCount, fields } = await pool.query(
+        "SELECT * FROM galeria"
+    );
+
+    console.log("----------------------------------------------");
+    console.log("Usuario registrados en la tabla");
+    console.log("Instruccion procesada: ", command);
+    console.log("Filas procesadas: ", rowCount);
+    console.log("Contenido procesado: ", rows);
+    console.log("Campos procesados: ", fields);
+    console.log("----------------------------------------------");
+
+    return rows;
+};
+
+
+// Función para insertar una imagen en la tabla galeria
+const agregarImagen = async ({ userId, imagen, titulo }) => {
+    const consulta =
+        "INSERT INTO galeria (userId, imagen, titulo) VALUES ($1, $2, $3) RETURNING *";
+    const values = [userId, imagen, titulo];
+
+    try {
+        const result = await pool.query(consulta, values);
+        console.log("Imagen agregada:", result.rows[0]);
+        return result.rows[0];
+    } catch (error) {
+        console.error("Error al agregar la imagen:", error);
+        throw new Error("Hubo un error al agregar la imagen.");
+    }
+};
+
+// Función para actualizar una imagen de la galeria
+const actualizarImagen = async ({ userId, imagen, titulo }) => {
+    const consulta =
+        "UPDATE galeria SET imagen = $2, titulo = $3 WHERE id = $1 RETURNING *";
+    const values = [userId, imagen, titulo];
+
+    try {
+        const result = await pool.query(consulta, values);
+        console.log("Imagen actualizada:", result.rows[0]);
+        return result.rows[0];
+    } catch (error) {
+        console.error("Error al actualizar la imagen:", error);
+        throw error;
+    }
+};
+
+// Función para eliminar un producto
+const eliminarImagen = async (id) => {
+    const consulta = "DELETE FROM galeria WHERE id = $1 RETURNING *";
+
+    try {
+        const result = await pool.query(consulta, [id]);
+        console.log("Imagen eliminada:", result.rows[0]);
+        return result.rows[0];
+    } catch (error) {
+        console.error("Error al eliminar una imagen:", error);
+        throw error;
+    }
+};
+
+//    ----------------------- productos ----------------------
+
+// Función para obtener todas las compras
+const verProducto = async (order) => {
+    const orderByClause = order === 'desc' ? 'DESC' : 'ASC';
+
+    const { rows, command, rowCount, fields } = await pool.query(
+        `SELECT * FROM productos ORDER BY id ${orderByClause}`
+    );
+
+    console.log("----------------------------------------------");
+    console.log("compra registrados en la tabla");
+    console.log("Instruccion procesada: ", command);
+    console.log("Filas procesadas: ", rowCount);
+    console.log("Contenido procesado: ", rows);
+    console.log("Campos procesados: ", fields);
+    console.log("----------------------------------------------");
+
+    return rows;
+};
+
+// Función para insertar una nueva compra la tabla
+const agregarProductos = async ({ nombre, descripcion, precio, imagen }) => {
+    const consulta =
+        "INSERT INTO productos (nombre, descripcion, precio, imagen) VALUES ($1, $2, $3, $4) RETURNING *";
+    const values = [nombre, descripcion, precio, imagen];
+
+    try {
+        const result = await pool.query(consulta, values);
+        console.log("Producto agregado:", result.rows[0]);
+        return result.rows[0];
+    } catch (error) {
+        console.error("Error al agregar una compra:", error);
+        throw error;
+    }
+};
+
+// Función para actualizar un producto
+const actualizarProducto = async ({ id, nombre, descripcion, precio, imagen }) => {
+    const consulta =
+        "UPDATE productos SET nombre = $2, descripcion = $3, precio = $4, imagen = $5 WHERE id = $1 RETURNING *";
+    const values = [id, nombre, descripcion, precio, imagen];
+
+    try {
+        const result = await pool.query(consulta, values);
+        console.log("Producto actualizado:", result.rows[0]);
+        return result.rows[0];
+    } catch (error) {
+        console.error("Error al actualizar un producto:", error);
+        throw error;
+    }
+};
+
+// Función para eliminar un producto
+const eliminarProducto = async (id) => {
+    const consulta = "DELETE FROM productos WHERE id = $1 RETURNING *";
+
+    try {
+        const result = await pool.query(consulta, [id]);
+        console.log("Producto eliminado:", result.rows[0]);
+        return result.rows[0];
+    } catch (error) {
+        console.error("Error al eliminar un producto:", error);
+        throw error;
+    }
+};
+
 //    ----------------------- compras ----------------------
 
 // Función para insertar una nueva compra la tabla
@@ -180,73 +312,5 @@ const eliminarCompra = async (id) => {
     }
 };
 
-//    ----------------------- productos ----------------------
 
-// Función para insertar una nueva compra la tabla
-const agregarProductos = async ({ nombre, descripcion, precio }) => {
-    const consulta =
-        "INSERT INTO productos (nombre, descripcion, precio) VALUES ($1, $2, $3) RETURNING *";
-    const values = [nombre, descripcion, precio];
-
-    try {
-        const result = await pool.query(consulta, values);
-        console.log("Producto agregado:", result.rows[0]);
-        return result.rows[0];
-    } catch (error) {
-        console.error("Error al agregar una compra:", error);
-        throw error;
-    }
-};
-
-// Función para obtener todas las compras
-const verProducto = async (order) => {
-    const orderByClause = order === 'desc' ? 'DESC' : 'ASC';
-
-    const { rows, command, rowCount, fields } = await pool.query(
-        `SELECT * FROM productos ORDER BY id ${orderByClause}`
-    );
-
-    console.log("----------------------------------------------");
-    console.log("compra registrados en la tabla");
-    console.log("Instruccion procesada: ", command);
-    console.log("Filas procesadas: ", rowCount);
-    console.log("Contenido procesado: ", rows);
-    console.log("Campos procesados: ", fields);
-    console.log("----------------------------------------------");
-
-    return rows;
-};
-
-
-// Función para actualizar un producto
-const actualizarProducto = async ({ id, nombre, descripcion, precio }) => {
-    const consulta =
-        "UPDATE productos SET nombre = $2, descripcion = $3, precio = $4 WHERE id = $1 RETURNING *";
-    const values = [id, nombre, descripcion, precio];
-
-    try {
-        const result = await pool.query(consulta, values);
-        console.log("Producto actualizado:", result.rows[0]);
-        return result.rows[0];
-    } catch (error) {
-        console.error("Error al actualizar un producto:", error);
-        throw error;
-    }
-};
-
-// Función para eliminar un producto
-const eliminarProducto = async (id) => {
-    const consulta = "DELETE FROM productos WHERE id = $1 RETURNING *";
-
-    try {
-        const result = await pool.query(consulta, [id]);
-        console.log("Producto eliminado:", result.rows[0]);
-        return result.rows[0];
-    } catch (error) {
-        console.error("Error al eliminar un producto:", error);
-        throw error;
-    }
-};
-
-
-export { pool, agregarUsuarios, verUsuario, actualizarUsuario, eliminarUsuario, agregarCompra, verCompra, actualizarCompra, eliminarCompra, agregarProductos, verProducto, actualizarProducto, eliminarProducto, generarToken, verificarToken };
+export { pool, agregarUsuarios, verUsuario, actualizarUsuario, eliminarUsuario, agregarImagen, verImagenes, actualizarImagen, eliminarImagen, agregarCompra, verCompra, actualizarCompra, eliminarCompra, agregarProductos, verProducto, actualizarProducto, eliminarProducto, generarToken, verificarToken };

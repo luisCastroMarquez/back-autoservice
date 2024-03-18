@@ -1,5 +1,5 @@
 // importando modulos personalizados
-import { agregarUsuarios, verUsuario, actualizarUsuario, eliminarUsuario, agregarCompra, verCompra, actualizarCompra, eliminarCompra, agregarProductos, verProducto, actualizarProducto, eliminarProducto, generarToken, verificarToken } from "./consultas.js";
+import { agregarUsuarios, verUsuario, actualizarUsuario, eliminarUsuario, agregarImagen, verImagenes, actualizarImagen, eliminarImagen, agregarCompra, verCompra, actualizarCompra, eliminarCompra, agregarProductos, verProducto, actualizarProducto, eliminarProducto, generarToken, verificarToken } from "./consultas.js";
 import cors from "cors";
 // importando express
 import express from "express";
@@ -60,6 +60,7 @@ app.post("/login", async (req, res) => {
         res.status(500).json({ mensaje: "Error en el servidor" });
     }
 });
+
 
 //    ----------------------- usuarios ----------------------
 
@@ -134,8 +135,132 @@ app.delete('/usuarios/:id', async (req, res) => {
     }
 });
 
-//    ----------------------- compras ----------------------
 
+//    ----------------------- galeria usuario ----------------------
+
+// GET para ver todos los usuarios
+app.get("/galeria", async (req, res) => {
+    const imagenes = await verImagenes();
+    res.json(imagenes);
+});
+
+// Ruta para obtener las imágenes de la galería del usuario actual
+app.get('/galeria/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId; // Obtén el userId del query params
+        const query = 'SELECT * FROM galeria WHERE userid = $1';
+        const { rows } = await pool.query(query, [userId]);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error al obtener las imágenes de la galería:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Ruta para el registro de galeria del usuario
+app.post("/galeria", async (req, res) => {
+    const { userId, imagen, titulo } = req.body;
+
+    try {
+        // Verificar que se proporcionen todos los campos requeridos
+        if (!userId || !imagen || !titulo) {
+            return res.status(400).json({ mensaje: "Todos los campos son requeridos" });
+        }
+
+        // Llama a la función para agregar la imagen a la galería del usuario
+        const nuevaImagen = await agregarImagen({ userId, imagen, titulo });
+        res.status(200).send(nuevaImagen);
+    } catch (error) {
+        console.error('Error al actualizar la galería del usuario:', error);
+        res.status(500).json({ mensaje: "Hubo un error en el servidor", error: error.message });
+    }
+});
+
+// Ruta para actualizar una imagen de la galería del usuario
+app.put('/galeria/:id', async (req, res) => {
+    const { userId } = req.params;
+    const { imagen, titulo } = req.body;
+    try {
+        const imagenActualizada = await actualizarImagen({ imagen, titulo });
+        res.json(imagenActualizada);
+    } catch (error) {
+        console.error('Error al actualizar una imagen:', error);
+        res.status(500).json({ error: 'Error al actualizar una imagen' });
+    }
+});
+
+// Ruta para eliminar un imagen galeria del usuario
+app.delete('/galeria/:id', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const imagenEliminada = await eliminarImagen(userId);
+        if (imagenEliminada) {
+            res.json({ mensaje: "Producto eliminado con éxito" });
+        } else {
+            res.status(404).json({ error: "Producto no encontrado" });
+        }
+    } catch (error) {
+        console.error('Error al eliminar un producto:', error);
+        res.status(500).json({ error: 'Error al eliminar un producto' });
+    }
+});
+
+//    ----------------------- productos ----------------------
+
+// Ruta para obtener todos los productos
+app.get("/productos", async (req, res) => {
+    try {
+        const producto = await verProducto('asc');
+        res.json(producto);
+        console.log("Productos obtenidos correctamente:", producto);
+    } catch (error) {
+        console.error("Error al obtener las compras:", error);
+        res.status(500).json({ error: "Error al obtener las compras" });
+    }
+});
+
+// Ruta para agregar un nuevo producto
+app.post("/productos", async (req, res) => {
+    const { nombre, descripcion, precio, imagen } = req.body;
+    try {
+        const nuevoProducto = await agregarProductos({ nombre, descripcion, precio, imagen });
+        res.json(nuevoProducto);
+    } catch (error) {
+        console.error("Error al agregar el producto:", error);
+        res.status(500).json({ error: "Error al agregar el producto" });
+    }
+});
+
+// Ruta para actualizar un producto
+app.put('/productos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { nombre, descripcion, precio, imagen } = req.body;
+    try {
+        const productoActualizado = await actualizarProducto({ id, nombre, descripcion, precio, imagen });
+        res.json(productoActualizado);
+    } catch (error) {
+        console.error('Error al actualizar un producto:', error);
+        res.status(500).json({ error: 'Error al actualizar un producto' });
+    }
+});
+
+// Ruta para eliminar un producto
+app.delete('/productos/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const productoEliminado = await eliminarProducto(id);
+        if (productoEliminado) {
+            res.json({ mensaje: "Producto eliminado con éxito" });
+        } else {
+            res.status(404).json({ error: "Producto no encontrado" });
+        }
+    } catch (error) {
+        console.error('Error al eliminar un producto:', error);
+        res.status(500).json({ error: 'Error al eliminar un producto' });
+    }
+});
+
+//    ----------------------- compras ----------------------
 
 // Ruta para obtener todas las compras
 app.get("/compras", async (req, res) => {
@@ -181,60 +306,5 @@ app.delete('/compras/:id', async (req, res) => {
     } catch (error) {
         console.error('Error al eliminar un producto:', error);
         res.status(500).json({ error: 'Error al eliminar una compra' });
-    }
-});
-
-//    ----------------------- productos ----------------------
-
-// Ruta para obtener todos los productos
-app.get("/productos", async (req, res) => {
-    try {
-        const producto = await verProducto('asc');
-        res.json(producto);
-        console.log("Productos obtenidos correctamente:", producto);
-    } catch (error) {
-        console.error("Error al obtener las compras:", error);
-        res.status(500).json({ error: "Error al obtener las compras" });
-    }
-});
-
-// Ruta para agregar un nuevo producto
-app.post("/productos", async (req, res) => {
-    const { nombre, descripcion, precio } = req.body;
-    try {
-        const nuevoProducto = await agregarProductos({ nombre, descripcion, precio });
-        res.json(nuevoProducto);
-    } catch (error) {
-        console.error("Error al agregar el producto:", error);
-        res.status(500).json({ error: "Error al agregar el producto" });
-    }
-});
-
-// Ruta para actualizar un producto
-app.put('/productos/:id', async (req, res) => {
-    const { id } = req.params;
-    const { nombre, descripcion, precio } = req.body;
-    try {
-        const productoActualizado = await actualizarProducto({ id, nombre, descripcion, precio });
-        res.json(productoActualizado);
-    } catch (error) {
-        console.error('Error al actualizar un producto:', error);
-        res.status(500).json({ error: 'Error al actualizar un producto' });
-    }
-});
-
-// Ruta para eliminar un producto
-app.delete('/productos/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const productoEliminado = await eliminarProducto(id);
-        if (productoEliminado) {
-            res.json({ mensaje: "Producto eliminado con éxito" });
-        } else {
-            res.status(404).json({ error: "Producto no encontrado" });
-        }
-    } catch (error) {
-        console.error('Error al eliminar un producto:', error);
-        res.status(500).json({ error: 'Error al eliminar un producto' });
     }
 });
