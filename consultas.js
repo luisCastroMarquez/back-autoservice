@@ -11,7 +11,6 @@ const { Pool } = pkg;
 const secretKey = 'tu_secreto_super_seguro';
 
 const pool = new Pool({
-    connectionString: process.abortRNV.database_url,
     host: process.env.DB_HOST, //servidor local de maquina
     user: process.env.DB_USER, // bd
     password: process.env.DB_PASSWORD, // password
