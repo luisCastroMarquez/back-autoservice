@@ -1,5 +1,5 @@
 // importando modulos personalizados
-import { agregarUsuarios, verUsuario, actualizarUsuario, eliminarUsuario, agregarImagen, verImagenes, actualizarImagen, eliminarImagen, agregarCompra, verCompra, actualizarCompra, eliminarCompra, agregarProductos, verProducto, actualizarProducto, eliminarProducto, generarToken, verificarToken } from "./consultas.js";
+import { agregarUsuarios, verUsuario, actualizarUsuario, eliminarUsuario, agregarImagen, verImagenes, actualizarImagen, eliminarImagen, agregarCompra, verCompra, actualizarCompra, eliminarCompra, agregarProductos, verProducto, actualizarProducto, eliminarProducto, generarToken, verificarToken, obtenerProductoPorId } from "./consultas.js";
 import cors from "cors";
 // importando express
 import express from "express";
@@ -218,6 +218,27 @@ app.get("/productos", async (req, res) => {
         res.status(500).json({ error: "Error al obtener las compras" });
     }
 });
+
+// Ruta para obtener todos los productos por id
+
+app.get('/producto/:productId', async (req, res) => {
+    const productId = req.params.id;
+
+    try {
+        const producto = await obtenerProductoPorId(productId);
+        if (!producto) {
+            // Si no se encuentra ningún producto con el ID especificado, responde con un mensaje de error
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+        // Si se encuentra el producto, responde con el producto encontrado
+        res.json(producto);
+    } catch (error) {
+        // Si ocurre algún error durante la consulta, responde con un mensaje de error interno del servidor
+        console.error('Error al obtener el producto:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 
 // Ruta para agregar un nuevo producto
 app.post("/productos", async (req, res) => {

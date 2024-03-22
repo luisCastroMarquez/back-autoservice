@@ -43,7 +43,6 @@ function verificarToken(req, res, next) {
     }
 }
 
-
 //    ----------------------- usuarios ----------------------
 
 // Función para obtener todos los usuarios
@@ -133,7 +132,6 @@ const verImagenes = async () => {
     return rows;
 };
 
-
 // Función para insertar una imagen en la tabla galeria
 const agregarImagen = async ({ userId, imagen, titulo }) => {
     const consulta =
@@ -182,7 +180,7 @@ const eliminarImagen = async (id) => {
 
 //    ----------------------- productos ----------------------
 
-// Función para obtener todas las compras
+// Función para obtener todas los productos
 const verProducto = async (order) => {
     const orderByClause = order === 'desc' ? 'DESC' : 'ASC';
 
@@ -200,6 +198,23 @@ const verProducto = async (order) => {
 
     return rows;
 };
+
+// Función para obtener un producto por su ID
+const obtenerProductoPorId = async (id) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM productos WHERE id = $1', [id]);
+        if (rows.length === 0) {
+            console.log("No se encontró ningún producto con el ID:", id);
+            return null;
+        }
+        console.log('Producto encontrado:', rows[0]);
+        return rows[0];
+    } catch (error) {
+        console.error('Error al obtener el producto por ID:', error);
+        throw error;
+    }
+};
+
 
 // Función para insertar una nueva compra la tabla
 const agregarProductos = async ({ nombre, descripcion, precio, imagen }) => {
@@ -313,4 +328,4 @@ const eliminarCompra = async (id) => {
 };
 
 
-export { pool, agregarUsuarios, verUsuario, actualizarUsuario, eliminarUsuario, agregarImagen, verImagenes, actualizarImagen, eliminarImagen, agregarCompra, verCompra, actualizarCompra, eliminarCompra, agregarProductos, verProducto, actualizarProducto, eliminarProducto, generarToken, verificarToken };
+export { pool, agregarUsuarios, verUsuario, actualizarUsuario, eliminarUsuario, agregarImagen, verImagenes, actualizarImagen, eliminarImagen, agregarCompra, verCompra, actualizarCompra, eliminarCompra, agregarProductos, verProducto, actualizarProducto, eliminarProducto, generarToken, verificarToken, obtenerProductoPorId };
